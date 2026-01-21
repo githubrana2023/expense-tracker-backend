@@ -1,8 +1,11 @@
 import { Hono } from "hono";
-import authRouter from "../modules/auth/route";
+import userRouter from "../modules/users/route";
 
 const router = new Hono()
 
-router.route('/auth', authRouter)
+router.get('/test',async (c)=>{
+    return c.json({message:'test route'})
+})
+router.route('/users',userRouter)
 
 export default router
