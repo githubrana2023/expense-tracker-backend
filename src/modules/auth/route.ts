@@ -2,9 +2,9 @@ import { Hono } from "hono";
 import { validator } from "hono/validator";
 
 import { loginSchema, registerSchema } from "./schema";
-import db from "../../drizzle/db";
-import { comparePassword, generateHashPassword } from "../../libs/bcrypt";
-import { userTable } from "../../drizzle/schema";
+// import db from "../../drizzle/db";
+// import { comparePassword, generateHashPassword } from "../../libs/bcrypt";
+// import { userTable } from "../../drizzle/schema";
 import { generateToken } from "../../libs/utils";
 
 
@@ -30,21 +30,23 @@ authRouter.post('/login',
     async (c) => {
         const { email, password, phone } = c.req.valid('json')
 
-        const existUser = email ? await db.query.userTable.findFirst({
-            where(storedUser, { eq }) {
-                return eq(storedUser.email, email)
-            }
-        }) : phone ? await db.query.userTable.findFirst({
-            where(storedUser, { eq }) {
-                return eq(storedUser.phone, phone)
-            },
-        }) : undefined
+        if (!email && !phone) return c.json({ message: 'Missing email Or Phone' })
 
-        if (!existUser) return c.json({ message: 'Invalid Credencials' })
+        // const existUser = email ? await db.query.userTable.findFirst({
+        //     where(storedUser, { eq }) {
+        //         return eq(storedUser.email, email)
+        //     }
+        // }) : phone ? await db.query.userTable.findFirst({
+        //     where(storedUser, { eq }) {
+        //         return eq(storedUser.phone, phone)
+        //     },
+        // }) : undefined
 
-        const pwIsMatch = await comparePassword(password, existUser.password)
+        // if (!existUser) return c.json({ message: 'Invalid Credencials' })
 
-        if (!pwIsMatch) return c.json({ message: 'Invalid Credencials' })
+        // const pwIsMatch = await comparePassword(password, existUser.password)
+
+        // if (!pwIsMatch) return c.json({ message: 'Invalid Credencials' })
 
 
         const accessToken = await generateToken({ email, phone },
@@ -87,26 +89,26 @@ authRouter.post('/register',
         const body = c.req.valid('json')
         const { email, password, phone } = body
 
-        const existUser = await db.query.userTable.findFirst({
-            where(storedUser, { or, eq }) {
-                return or(
-                    eq(storedUser.email, email),
-                    eq(storedUser.phone, phone)
-                )
-            },
-        })
+        // const existUser = await db.query.userTable.findFirst({
+        //     where(storedUser, { or, eq }) {
+        //         return or(
+        //             eq(storedUser.email, email),
+        //             eq(storedUser.phone, phone)
+        //         )
+        //     },
+        // })
 
-        if (existUser) return c.json({ message: 'User already registerd' })
+        // if (existUser) return c.json({ message: 'User already registerd' })
 
-        const hashedPw = await generateHashPassword(password)
+        // const hashedPw = await generateHashPassword(password)
 
-        const [newUser] = await db.insert(userTable).values({ ...body, password: hashedPw }).returning()
+        // const [newUser] = await db.insert(userTable).values({ ...body, password: hashedPw }).returning()
 
         return c.json({
             message: 'response from auth/login route',
             data: {
                 message: "registerd success",
-                newUser
+                // newUser
             }
         })
     })
