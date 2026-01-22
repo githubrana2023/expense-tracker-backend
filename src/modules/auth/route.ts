@@ -87,14 +87,13 @@ authRouter.post('/register',
         const body = c.req.valid('json')
         const { email, password, phone } = body
 
-        const existUser = await db.query.userTable.findFirst({
-            where:(storedUser, { or, eq }) =>{
-                return  or(
-                eq(storedUser.email, email) ,
-                 eq(storedUser.phone, phone)
+
+        const [existUser] = await db.select().from(userTable).where(
+            or(
+                eq(userTable.email, email),
+                eq(userTable.phone, phone),
             )
-            },
-        })
+        )
 
         if (existUser) return c.json({ message: 'User already registerd' })
 
@@ -106,7 +105,7 @@ authRouter.post('/register',
             message: 'response from auth/login route',
             data: {
                 message: "registerd success",
-                // newUser
+                newUser
             }
         })
     })
