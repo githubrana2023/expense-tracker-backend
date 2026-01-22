@@ -1,11 +1,10 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 
-import { loginSchema, registerSchema } from "./schema";
-// import db from "../../drizzle/db";
-// import { comparePassword, generateHashPassword } from "../../libs/bcrypt";
-// import { userTable } from "../../drizzle/schema";
-import { generateToken } from "../../libs/utils";
+import { loginSchema, registerSchema } from "@/modules/auth/schema";
+import { generateToken } from "@/libs/utils";
+import db from "@/drizzle/db";
+import { comparePassword } from "@/libs/bcrypt";
 
 
 
@@ -30,23 +29,21 @@ authRouter.post('/login',
     async (c) => {
         const { email, password, phone } = c.req.valid('json')
 
-        if (!email && !phone) return c.json({ message: 'Missing email Or Phone' })
 
-        // const existUser = email ? await db.query.userTable.findFirst({
-        //     where(storedUser, { eq }) {
-        //         return eq(storedUser.email, email)
-        //     }
-        // }) : phone ? await db.query.userTable.findFirst({
-        //     where(storedUser, { eq }) {
-        //         return eq(storedUser.phone, phone)
-        //     },
-        // }) : undefined
+        const existUser = await db.query.userTable.findFirst({
+            where(storedUser, { or, eq }) {
+                return or(
+                    email ? eq(storedUser.email, email) : undefined,
+                    phone ? eq(storedUser.phone, phone) : undefined
+                )
+            }
+        })
 
-        // if (!existUser) return c.json({ message: 'Invalid Credencials' })
+        if (!existUser) return c.json({ message: 'Invalid Credencials' })
 
-        // const pwIsMatch = await comparePassword(password, existUser.password)
+        const pwIsMatch = await comparePassword(password, existUser.password)
 
-        // if (!pwIsMatch) return c.json({ message: 'Invalid Credencials' })
+        if (!pwIsMatch) return c.json({ message: 'Invalid Credencials' })
 
 
         const accessToken = await generateToken({ email, phone },
