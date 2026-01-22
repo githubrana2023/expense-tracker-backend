@@ -6,9 +6,15 @@ import router from './routes'
 import authRouter from './modules/auth/route'
 import { isTokenStartWithBearer } from './libs/utils'
 import { ZodError } from 'zod'
-import { verify } from 'hono/jwt'
+import { jwt, verify } from 'hono/jwt'
+import { JWTPayload, JwtTokenExpired, JwtTokenInvalid } from 'hono/utils/jwt/types'
 
-const app = new Hono()
+type S = {
+  email: string,
+  phone: string
+}
+
+const app = new Hono<{ Variables: S }>()
 
 //middlewares
 app.use(cors({
@@ -23,15 +29,25 @@ app.use('/api/*', async (c, next) => {
   if (!token) return c.json({ message: 'Unauthorized!' }, 401)
 
   if (!isTokenStartWithBearer(token)) return c.json({ message: 'Forbidden!' }, 402)
-    
-    const [,accessToken] = token.split(" ")
 
-    const now =new Date().getTime()/1000
+  const [, accessToken] = token.split(" ")
 
-    const floor = Math.floor(now)
+  const payload = await verify(accessToken, envConfig.ACCESS_TOKEN_SECRET, 'HS256')
 
-    console.log(now,floor)
-  const payload = await verify(accessToken, envConfig.ACCESS_TOKEN_SECRET,'HS256')
+  let iat
+  let exp
+  if (payload.iat) {
+    iat = new Date(payload.iat * 1000)
+  }
+  if (payload.exp) {
+    exp = new Date(payload.exp * 1000)
+  }
+
+  console.log({
+    iat,
+    exp,
+    payload
+  })
 
 
   await next()
@@ -42,16 +58,20 @@ app.use('/api/*', async (c, next) => {
 app.onError(async (error, c) => {
 
   if (error instanceof ZodError) {
-
     return c.json({
       message: error.issues.map(iss => iss.message),
       custom: 422,
       error
     }, 400)
   }
+
+  if (error instanceof JwtTokenExpired || error instanceof JwtTokenInvalid) {
+    return c.json({ error, from: 'global error exired token' }, 401)
+  }
+
   console.log({ error });
 
-  return c.json({ error: error.message, from: 'global error' })
+  return c.json({ error, from: 'global error' })
 })
 
 

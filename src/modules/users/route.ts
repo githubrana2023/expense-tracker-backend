@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import db from "../../drizzle/db";
+import db from "@/drizzle/db";
 
 const userRouter = new Hono()
 

@@ -1,24 +1,45 @@
-import { sign } from "hono/jwt"
-import envConfig, { EnvConfigKeys } from "../config/envConfig"
 
-export const dayInMiliseconds = (day: number) => 60 * 60 * 24 * day
-export const addDay = (currentDate: Date, additionalDay: number) => new Date(currentDate.getTime() + additionalDay).getTime()
+import { sign } from "hono/jwt"
+import { addDays, addMinutes, addSeconds } from 'date-fns'
+import envConfig, { EnvConfigKeys } from "@/config/envConfig"
+
 
 type Secret = {
     secret: Extract<EnvConfigKeys, 'ACCESS_TOKEN_SECRET' | 'REFRESH_TOKEN_SECRET'>,
     expireIn: Extract<EnvConfigKeys, 'ACCESS_TOKEN_EXPIRE_IN' | 'REFRESH_TOKEN_EXPIRE_IN'>
 }
 
-export const generateToken = async (payload: unknown, { secret, expireIn }: Secret) => {
-    const now = new Date()
+export const generateToken = async (payload: Record<string, unknown>, { secret, expireIn }: Secret) => {
+    const test = true
+
+    const now = Date.now()
+    const iat = Math.floor(now / 1000)
+    const tempExp = test ? addSeconds(new Date(now), 30).getTime() : addDays(new Date(now), envConfig[expireIn]).getTime()
+    const exp = tempExp / 1000
 
     const token = await sign({
-        sub: payload,
-        iat: now.getTime(),
-        exp: addDay(now, dayInMiliseconds(envConfig[expireIn]))
-    }, envConfig[secret])
+        ...payload,
+        iat,
+        exp,
+    }, envConfig[secret], 'HS256')
 
     return token
 }
 
 export const isTokenStartWithBearer = (token: string) => token.startsWith('Bearer ')
+
+
+export const tryCatch = async <T,>(promise: Promise<T>) => {
+    try {
+        const data = await promise
+        return {
+            error: null,
+            data
+        }
+    } catch (error) {
+        return {
+            data: null,
+            error
+        }
+    }
+}
