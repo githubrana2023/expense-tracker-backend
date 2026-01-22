@@ -4,7 +4,7 @@ import { validator } from "hono/validator";
 import { loginSchema, registerSchema } from "@/modules/auth/schema";
 import { generateToken } from "@/libs/utils";
 import db from "@/drizzle/db";
-import { comparePassword } from "@/libs/bcrypt";
+import { comparePassword, generateHashPassword } from "@/libs/bcrypt";
 import { userTable } from "@/drizzle/schema";
 import { eq, or } from "drizzle-orm";
 
@@ -87,20 +87,20 @@ authRouter.post('/register',
         const body = c.req.valid('json')
         const { email, password, phone } = body
 
-        // const existUser = await db.query.userTable.findFirst({
-        //     where(storedUser, { or, eq }) {
-        //         return or(
-        //             eq(storedUser.email, email),
-        //             eq(storedUser.phone, phone)
-        //         )
-        //     },
-        // })
+        const existUser = await db.query.userTable.findFirst({
+            where:(storedUser, { or, eq }) =>{
+                return  or(
+                eq(storedUser.email, email) ,
+                 eq(storedUser.phone, phone)
+            )
+            },
+        })
 
-        // if (existUser) return c.json({ message: 'User already registerd' })
+        if (existUser) return c.json({ message: 'User already registerd' })
 
-        // const hashedPw = await generateHashPassword(password)
+        const hashedPw = await generateHashPassword(password)
 
-        // const [newUser] = await db.insert(userTable).values({ ...body, password: hashedPw }).returning()
+        const [newUser] = await db.insert(userTable).values({ ...body, password: hashedPw }).returning()
 
         return c.json({
             message: 'response from auth/login route',
