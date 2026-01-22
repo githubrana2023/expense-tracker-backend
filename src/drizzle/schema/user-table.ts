@@ -1,5 +1,6 @@
 import { pgTable, text, uuid, varchar } from "drizzle-orm/pg-core";
-import { createdAt, updatedAt } from "../schema-helper/utils";
+import { createdAt, updatedAt } from "@/drizzle/schema-helper/utils"
+
 
 export const userTable = pgTable('users', {
     id: uuid('id').primaryKey().unique().notNull().defaultRandom(),

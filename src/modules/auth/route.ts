@@ -5,6 +5,8 @@ import { loginSchema, registerSchema } from "@/modules/auth/schema";
 import { generateToken } from "@/libs/utils";
 import db from "@/drizzle/db";
 import { comparePassword } from "@/libs/bcrypt";
+import { userTable } from "@/drizzle/schema";
+import { eq, or } from "drizzle-orm";
 
 
 
@@ -30,14 +32,13 @@ authRouter.post('/login',
         const { email, password, phone } = c.req.valid('json')
 
 
-        const existUser = await db.query.userTable.findFirst({
-            where(storedUser, { or, eq }) {
-                return or(
-                    email ? eq(storedUser.email, email) : undefined,
-                    phone ? eq(storedUser.phone, phone) : undefined
-                )
-            }
-        })
+        const [existUser] = await db.select().from(userTable).where(
+            or(
+                email ? eq(userTable.email, email) : undefined,
+                phone ? eq(userTable.phone, phone) : undefined,
+
+            )
+        )
 
         if (!existUser) return c.json({ message: 'Invalid Credencials' })
 
