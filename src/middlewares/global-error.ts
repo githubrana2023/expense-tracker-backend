@@ -24,7 +24,7 @@ export const globalErrorHandler:ErrorHandler<AppType> =async (error,c)=>{
   // APP ERROR
   if (error instanceof AppError) {
     const statusCode = error.statusCode
-    return c.json({ message: error.message, from: 'global APP INSTANCE' }, statusCode)
+    return c.json({ message: error.message, from: 'global APP INSTANCE' }, 401)
   }
 
   //UNEXPECTED ERROR
