@@ -36,7 +36,6 @@ authRouter.post('/login',
             or(
                 email ? eq(userTable.email, email) : undefined,
                 phone ? eq(userTable.phone, phone) : undefined,
-
             )
         )
 
@@ -47,19 +46,23 @@ authRouter.post('/login',
         if (!pwIsMatch) return c.json({ message: 'Invalid Credencials' })
 
 
-        const accessToken = await generateToken({ email, phone },
-            {
-                secret: 'ACCESS_TOKEN_SECRET',
-                expireIn: 'ACCESS_TOKEN_EXPIRE_IN'
-            }
-        )
+        const accessToken = await generateToken({
+            id: existUser.id,
+            email: existUser.email,
+            phone: existUser.phone
+        }, {
+            secret: 'ACCESS_TOKEN_SECRET',
+            expireIn: 'ACCESS_TOKEN_EXPIRE_IN'
+        })
 
-        const refreshToken = await generateToken({ email, phone },
-            {
-                secret: 'REFRESH_TOKEN_SECRET',
-                expireIn: 'REFRESH_TOKEN_EXPIRE_IN'
-            }
-        )
+        const refreshToken = await generateToken({
+            id: existUser.id,
+            email: existUser.email,
+            phone: existUser.phone
+        }, {
+            secret: 'REFRESH_TOKEN_SECRET',
+            expireIn: 'REFRESH_TOKEN_EXPIRE_IN'
+        })
 
 
         return c.json({

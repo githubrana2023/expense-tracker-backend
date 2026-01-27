@@ -1,0 +1,1 @@
+export const hasPermission = (arr: string[], email: string) => arr.includes(email)
