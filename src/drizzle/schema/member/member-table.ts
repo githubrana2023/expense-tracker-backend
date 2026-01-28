@@ -5,6 +5,8 @@ import { relations } from "drizzle-orm";
 import { memberTrxTypeTable } from "./member-transaction-type-table";
 import { memberBankAccounts } from "./member-bank-table";
 import { memberTrxTable } from "./member-transaction-table";
+import { memberFinancierTable } from "./member-financier-table";
+import { memberLoanTable } from "./member-loan-table";
 
 
 /* ======================================================
@@ -35,7 +37,10 @@ export const familyMemberTableRelation = relations(familyMemberTable, ({ one, ma
 
 
 
-  banks: many(memberBankAccounts, { relationName: relationBetween('memberBank and member') }),
+  memberbanks: many(memberBankAccounts, { relationName: relationBetween('memberBank and member') }),
   memberTrxTypes: many(memberTrxTypeTable, { relationName: relationBetween('memberTrxType and member') }),
-  memberTransactions: many(memberTrxTable, { relationName: relationBetween('memberTrx and member') })
+  memberTransactions: many(memberTrxTable, { relationName: relationBetween('memberTrx and member') }),
+  memberFinanciers: many(memberFinancierTable, { relationName: relationBetween('memberFinancier and member') }),
+  memberLoans: many(memberLoanTable, { relationName: relationBetween('memberLoan and member') }),
+
 }))
