@@ -1,0 +1,1 @@
+export const permissionActions = ['GET', 'CREATE', 'PUT', 'DELETE'] as const

@@ -7,10 +7,11 @@ import db from "@/drizzle/db";
 import { comparePassword, generateHashPassword } from "@/libs/bcrypt";
 import { userTable } from "@/drizzle/schema";
 import { eq, or } from "drizzle-orm";
+import { AppType } from "@/types/app-type";
 
 
 
-const authRouter = new Hono()
+const authRouter = new Hono<AppType>()
 
 authRouter.post('/login',
     validator('json', async (value, c) => {

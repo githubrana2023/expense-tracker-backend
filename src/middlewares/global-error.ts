@@ -6,6 +6,11 @@ import { ZodError } from "zod";
 
 export const globalErrorHandler:ErrorHandler<AppType> =async (error,c)=>{
 
+  console.error({
+    from:"global error handler",
+    error
+  })
+
      // ZOD ERROR
   if (error instanceof ZodError) {
     return c.json({
