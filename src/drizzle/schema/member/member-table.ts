@@ -7,6 +7,8 @@ import { memberBankAccounts } from "./member-bank-table";
 import { memberTrxTable } from "./member-transaction-table";
 import { memberFinancierTable } from "./member-financier-table";
 import { memberLoanTable } from "./member-loan-table";
+import { memberShopkeeperTable } from "./member-shopkeeper-table";
+import { memberShopkeeperPurchaseTable } from "./member-shopkeeper-purchase-table";
 
 
 /* ======================================================
@@ -42,5 +44,7 @@ export const familyMemberTableRelation = relations(familyMemberTable, ({ one, ma
   memberTransactions: many(memberTrxTable, { relationName: relationBetween('memberTrx and member') }),
   memberFinanciers: many(memberFinancierTable, { relationName: relationBetween('memberFinancier and member') }),
   memberLoans: many(memberLoanTable, { relationName: relationBetween('memberLoan and member') }),
+  memberShopkeepers: many(memberShopkeeperTable, { relationName:relationBetween('memberShopkeeper and member')}),
+  memberShopkeeperPurchase:many(memberShopkeeperPurchaseTable,{relationName: relationBetween('memberShopkeeperPurchase and member')})
 
 }))

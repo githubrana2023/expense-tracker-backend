@@ -1,4 +1,4 @@
-import { pgTable, unique, uuid, varchar } from "drizzle-orm/pg-core";
+import { pgTable, unique, uuid, varchar,boolean } from "drizzle-orm/pg-core";
 import { familyMemberTable } from "./member-table";
 import { createdAt, relationBetween, updatedAt } from "@/drizzle/schema-helper/utils";
 import { relations } from "drizzle-orm";
@@ -9,6 +9,7 @@ export const memberFinancierTable = pgTable("member_financier", {
     memberId: uuid("member_id").notNull().references(() => familyMemberTable.id, { onDelete: "cascade" }),
     name: varchar("name", { length: 255 }).notNull(),
     phone: varchar("phone", { length: 20 }).notNull(),
+    isBlock:boolean('is_block').notNull().default(false),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
 }, (table) => [
