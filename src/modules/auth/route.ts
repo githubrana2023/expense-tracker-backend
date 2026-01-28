@@ -5,9 +5,9 @@ import { loginSchema, registerSchema } from "@/modules/auth/schema";
 import { generateToken } from "@/libs/utils";
 import db from "@/drizzle/db";
 import { comparePassword, generateHashPassword } from "@/libs/bcrypt";
-import { userTable } from "@/drizzle/schema";
 import { eq, or } from "drizzle-orm";
 import { AppType } from "@/types/app-type";
+import { familyTable } from "@/drizzle/schema";
 
 
 
@@ -18,27 +18,19 @@ authRouter.post('/login',
         const validate = loginSchema.safeParse(value)
 
         if (!validate.success) throw new Error('Invalid Fields')
-        const { phone, email } = validate.data
-
-        if (!email && !phone) return c.json({ message: "Please enter Email or Phone!" })
+        const { email } = validate.data
 
         return {
             ...validate.data,
             email,
-            phone
         }
 
     }),
     async (c) => {
-        const { email, password, phone } = c.req.valid('json')
+        const { email, password, } = c.req.valid('json')
 
 
-        const [existUser] = await db.select().from(userTable).where(
-            or(
-                email ? eq(userTable.email, email) : undefined,
-                phone ? eq(userTable.phone, phone) : undefined,
-            )
-        )
+        const [existUser] = await db.select().from(familyTable).where(eq(familyTable.email, email))
 
         if (!existUser) return c.json({ message: 'Invalid Credencials' })
 
@@ -50,7 +42,6 @@ authRouter.post('/login',
         const accessToken = await generateToken({
             id: existUser.id,
             email: existUser.email,
-            phone: existUser.phone
         }, {
             secret: 'ACCESS_TOKEN_SECRET',
             expireIn: 'ACCESS_TOKEN_EXPIRE_IN'
@@ -59,7 +50,6 @@ authRouter.post('/login',
         const refreshToken = await generateToken({
             id: existUser.id,
             email: existUser.email,
-            phone: existUser.phone
         }, {
             secret: 'REFRESH_TOKEN_SECRET',
             expireIn: 'REFRESH_TOKEN_EXPIRE_IN'
@@ -89,21 +79,16 @@ authRouter.post('/register',
     }),
     async (c) => {
         const body = c.req.valid('json')
-        const { email, password, phone } = body
+        const { email, password } = body
 
 
-        const [existUser] = await db.select().from(userTable).where(
-            or(
-                eq(userTable.email, email),
-                eq(userTable.phone, phone),
-            )
-        )
+        const [existUser] = await db.select().from(familyTable).where(eq(familyTable.email, email))
 
         if (existUser) return c.json({ message: 'User already registerd' })
 
         const hashedPw = await generateHashPassword(password)
 
-        const [newUser] = await db.insert(userTable).values({ ...body, password: hashedPw }).returning()
+        const [newUser] = await db.insert(familyTable).values({ ...body, password: hashedPw }).returning()
 
         return c.json({
             message: 'response from auth/login route',
